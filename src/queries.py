@@ -98,14 +98,16 @@ def log(conn, name: str, grams: float, *, day: date = None) -> None:
     try:
         if day is None:
             day = date.today()
+        else:
+            day = date.fromisoformat(day)
         food_id = get_food_id(conn, name)
         log_id = get_log_id(conn, day)
         cursor.execute("INSERT INTO log_entries (grams_of_food, log_id, food_id) VALUES (%s, %s, %s);", (grams, log_id, food_id))
         conn.commit()
     except ValueError as e:
-        print(e)
+        raise
     except Error as e:
-        print(f"Error: {e}")
+        raise
     finally:
         cursor.close()
 
