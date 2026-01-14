@@ -9,7 +9,8 @@ def add_food(conn, name: str, calories_100g: float, *, protein_100g: float = Non
         cursor.execute("""INSERT INTO foods (name, calories_100g, protein_100g, fat_100g, carbs_100g, sugar_100g) VALUES (%s, %s, %s, %s, %s, %s);""", (name, calories_100g, protein_100g, fat_100g, carbs_100g,sugar_100g))
         conn.commit()
     except Error as e:
-        print(f"Error: '{e}'")
+        conn.rollback()
+        raise
     finally:
         cursor.close()
 

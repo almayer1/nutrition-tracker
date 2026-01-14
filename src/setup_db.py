@@ -37,7 +37,7 @@ def main() -> None:
     user = "root"
     pwd = input("Enter your password: ")
     connection = create_server_connection(host, user, pwd)
-    filename = "sql/schema.sql" 
+    filename = "../sql/schema.sql" 
     sql_text = read_file(filename)
     execute_query(connection, sql_text)
 

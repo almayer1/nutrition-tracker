@@ -3,26 +3,27 @@ from mysql.connector import Error
 
 def main_menu(conn):
     choice = input("""
-                   Please select an option
-                   [1] Log Food Entry
-                   [2] Daily Summary
-                   [3] Add Food to Database
-                   [4] List Foods in Database
-                   [q] Quit
-                   """)
-    if choice == 1:
+    Please select an option
+    [1] Log Food Entry
+    [2] Daily Summary
+    [3] Add Food to Database
+    [4] List Foods in Database
+    [q] Quit
+    """)
+    if choice == "1":
         prompt_log_food(conn)
         return True
-    elif choice == 2:
+    elif choice == "2":
         prompt_daily_summary(conn)
         return True
-    elif choice == 3:
+    elif choice == "3":
         prompt_add_food(conn)
         return True
-    elif choice == 4:
+    elif choice == "4":
         prompt_list_foods(conn)
         return True
     else:
+        print("Exiting...")
         return False
 
 def prompt_log_food(conn) -> None:
@@ -41,10 +42,24 @@ def prompt_log_food(conn) -> None:
         print(e)
 
 def prompt_daily_summary(conn) -> None:
-    pass
+    print("Today's Summary:")
+    queries.list_log_entries(conn)
+    
 
 def prompt_add_food(conn) -> None:
-    pass
+    name = input("Enter the name of the food you want to add: ")
+    calories = input("Amount of calories per 100 grams: ")
+    protein = input("Amount of protein per 100 grams: ")
+    fat = input("Amount of fat per 100 grams: ")
+    carbs = input("Amount of carbs per 100 grams: ")
+    sugar = input("Amount of sugar per 100 grams: ")
+    try:
+        queries.add_food(conn, name, calories, protein_100g=protein, fat_100g=fat, carbs_100g=carbs, sugar_100g=sugar)
+        print(f"Successfully added {name}")
+    except Error as e:
+        print(e)
 
 def prompt_list_foods(conn) -> None:
-    pass
+    print("Food in Datbase:")
+    queries.list_foods(conn)
+
