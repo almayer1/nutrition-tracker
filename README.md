@@ -13,7 +13,7 @@ A simple command-line nutrition tracker that stores foods (nutrition per 100g), 
 ## Features
 - Add foods to the database (calories, protein, fat, carbs, sugar per 100g)  
 - Log foods eaten by grams for a specific date (or “today”)  
-- View daily totals and compare to goals (if configured)
+- View daily totals and compare to goals
 
 ## Requirements
 - Python 3.9+  
