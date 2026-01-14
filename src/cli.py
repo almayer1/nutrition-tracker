@@ -1,5 +1,6 @@
 import queries
 from mysql.connector import Error
+from datetime import date
 
 def main_menu(conn):
     choice = input("""
@@ -42,9 +43,37 @@ def prompt_log_food(conn) -> None:
         print(e)
 
 def prompt_daily_summary(conn) -> None:
-    print("Today's Summary:")
-    queries.list_log_entries(conn)
+    #Find the log_id for today using daily_logs table. --- need a get_log_id(date) -> int: func
+    day = date.today()
+    log_id = queries.get_log_id(conn, day)
+
+    #Using found log_id find food_id and grams eaten today in log_entries table --- need a get_log(conn, log_id) -> list of tuples
+    foods_eaten = queries.get_log(conn, log_id)
     
+    #calculate the macros consumed and name of food using food_id and grams in foods table --- get_food_macros(conn, food_id, grams) -> tuple:
+    log = []
+    for food in foods_eaten:
+        food_id, grams = food
+        log.append(queries.get_food_macros(conn, food_id, grams))
+
+    #compare current macros with goal macros by using goals table --- get_goals(conn, user_id = 1) -> list:
+    totals = {"calories": 0, "protein": 0, "fat": 0, "carbs": 0, "sugar": 0}
+    for entry in log:
+        totals["calories"] += entry[1]
+        totals["protein"] += entry[2]
+        totals["fat"] += entry[3] 
+        totals["carbs"] += entry[4] 
+        totals["sugar"] += entry[5]
+
+    goals = queries.get_goals(conn)
+
+    #display everything
+    print(f"Summary for {day}")
+    print(f"Calories: {totals['calories']}/{goals[0]}")
+    print(f"Protein: {totals['protein']}/{goals[1]}")
+    print(f"Fat: {totals['fat']}/{goals[2]}")
+    print(f"Carbohydrates: {totals['carbs']}/{goals[3]}")
+    print(f"Sugar: {totals['sugar']}/{goals[4]}")
 
 def prompt_add_food(conn) -> None:
     name = input("Enter the name of the food you want to add: ")
@@ -60,6 +89,6 @@ def prompt_add_food(conn) -> None:
         print(e)
 
 def prompt_list_foods(conn) -> None:
-    print("Food in Datbase:")
+    print("Foods in Datbase:")
     queries.list_foods(conn)
 

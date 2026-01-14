@@ -26,3 +26,12 @@ CREATE TABLE IF NOT EXISTS log_entries(
     FOREIGN KEY(food_id) REFERENCES foods(food_id) ON DELETE SET NULL,
     FOREIGN KEY(log_id) REFERENCES daily_logs(log_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS goals(
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    calorie_goal INT NOT NULL,
+    protein_goal INT ,
+    fat_goal INT,
+    carbs_goal INT,
+    sugar_goal INT
+);

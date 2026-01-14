@@ -2,6 +2,8 @@ from mysql.connector import Error
 from datetime import date
 from typing import Optional
 
+# ----- food creating and updating ------
+
 #creates a new food item
 def add_food(conn, name: str, calories_100g: float, *, protein_100g: float = None, fat_100g: float = None, carbs_100g: float = None, sugar_100g: float = None) -> None:
     cursor = conn.cursor()
@@ -68,7 +70,7 @@ def get_food_id(conn, name: str) -> Optional[int]:
     finally:
         cursor.close()
 
-def get_log_id(conn, day: date) -> int:
+def get_and_create_log_id(conn, day: date) -> int:
     cursor = conn.cursor()
     try:
         cursor.execute("SELECT log_id FROM daily_logs WHERE day = %s;", (day,))
@@ -80,6 +82,8 @@ def get_log_id(conn, day: date) -> int:
         raise
     finally: 
         cursor.close()
+
+# ---- log creating and updating -----
 
 #makes a new log for the day... day format = 'YYYY-MM-DD', returns the log_id
 def create_log(conn, day, *, weight: float = None, notes: str = None) -> int:
@@ -102,7 +106,7 @@ def log(conn, name: str, grams: float, *, day: date = None) -> None:
         else:
             day = date.fromisoformat(day)
         food_id = get_food_id(conn, name)
-        log_id = get_log_id(conn, day)
+        log_id = get_and_create_log_id(conn, day)
         cursor.execute("INSERT INTO log_entries (grams_of_food, log_id, food_id) VALUES (%s, %s, %s);", (grams, log_id, food_id))
         conn.commit()
     except ValueError as e:
@@ -137,3 +141,42 @@ def list_daily_logs(conn) -> None:
         print(f"Error: '{e}'")
     finally:
         cursor.close()
+
+# ----- getting info from database -------
+
+def get_log_id(conn, day:date) -> int:
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT log_id FROM daily_logs WHERE day=%s", (day,))
+        row = cursor.fetchone()
+        return int(row[0])
+    except Error as e:
+        raise
+    finally:
+        cursor.close()
+
+def get_log(conn, log_id:int) -> list:
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT food_id, grams_of_food FROM log_entries WHERE log_id = %s", (log_id,))
+        return cursor.fetchall()
+    except Error as e:
+        raise
+
+#requests macros per 100 grams and calculates the real macros based on the grams parameter
+def get_food_macros(conn, food_id:int, grams:float) -> tuple:
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, calories_100g, protein_100g, fat_100g, carbs_100g ,sugar_100g FROM foods WHERE food_id = %s", (food_id,))
+    row = cursor.fetchone()
+    name = row[0]
+    calories = row[1] * grams / 100
+    protein = row[2] * grams / 100
+    fat = row[3] * grams / 100
+    carbs = row[4] * grams / 100
+    sugar = row[5] * grams / 100
+    return (name, calories, protein, fat, carbs, sugar)
+
+def get_goals(conn, user_id:int = 1) -> tuple:
+    cursor = conn.cursor()
+    cursor.execute("SELECT calorie_goal, protein_goal, fat_goal, carbs_goal, sugar_goal FROM goals WHERE user_id = %s", (user_id,))
+    return cursor.fetchone()
